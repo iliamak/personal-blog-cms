@@ -1,9 +1,23 @@
 import React, { useState } from 'react';
 import AdminPanel from './AdminPanel';
 import PublicView from './PublicView';
+import { useData } from '../context/DataContext';
 
 const PersonalBlog = () => {
   const [activeTab, setActiveTab] = useState('preview');
+  const { saveData } = useData(); // Получаем функцию сохранения данных из контекста
+  const [showSaveNotification, setShowSaveNotification] = useState(false);
+  
+  // Функция для обработки сохранения данных
+  const handleSave = () => {
+    saveData(); // Сохраняем данные через контекст
+    setShowSaveNotification(true);
+    
+    // Скрываем уведомление через 3 секунды
+    setTimeout(() => {
+      setShowSaveNotification(false);
+    }, 3000);
+  };
   
   return (
     <div className="min-h-screen bg-gray-50 text-gray-800 font-sans">
@@ -18,7 +32,10 @@ const PersonalBlog = () => {
             >
               Предпросмотр
             </button>
-            <button className="bg-green-600 hover:bg-green-500 px-3 py-1 rounded">
+            <button 
+              className="bg-green-600 hover:bg-green-500 px-3 py-1 rounded"
+              onClick={handleSave}
+            >
               Сохранить
             </button>
           </div>
@@ -35,6 +52,13 @@ const PersonalBlog = () => {
             <path d="M12 4V20M20 12H4" />
           </svg>
         </button>
+      )}
+      
+      {/* Уведомление о сохранении */}
+      {showSaveNotification && (
+        <div className="fixed bottom-4 right-4 bg-green-500 text-white px-4 py-2 rounded shadow-md z-50 animate-pulse">
+          Изменения сохранены!
+        </div>
       )}
       
       {/* Основное содержание */}
