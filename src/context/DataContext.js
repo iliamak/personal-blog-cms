@@ -71,11 +71,43 @@ export const DataProvider = ({ children }) => {
     const savedData = localStorage.getItem('blogData');
     return savedData ? JSON.parse(savedData) : initialData;
   });
+  
+  // Состояние для отслеживания изменений
+  const [hasChanges, setHasChanges] = useState(false);
 
-  // Сохраняем изменения в localStorage при обновлении данных
-  useEffect(() => {
+  // Функция принудительного сохранения данных
+  const saveData = () => {
     localStorage.setItem('blogData', JSON.stringify(blogData));
+    setHasChanges(false);
+    
+    // Здесь в реальном приложении был бы код для сохранения на сервер
+    console.log('Данные сохранены:', blogData);
+    
+    // Можно добавить имитацию сохранения на сервер
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve({ success: true });
+      }, 500);
+    });
+  };
+
+  // Отслеживаем изменения данных
+  useEffect(() => {
+    setHasChanges(true);
   }, [blogData]);
+
+  // Автоматическое сохранение при наличии изменений (по таймеру)
+  useEffect(() => {
+    if (hasChanges) {
+      const timer = setTimeout(() => {
+        localStorage.setItem('blogData', JSON.stringify(blogData));
+        console.log('Авто-сохранение...');
+        setHasChanges(false);
+      }, 3000); // Автосохранение через 3 секунды после последнего изменения
+      
+      return () => clearTimeout(timer);
+    }
+  }, [blogData, hasChanges]);
 
   // Функция для обновления профиля
   const updateProfile = (newProfile) => {
@@ -187,9 +219,19 @@ export const DataProvider = ({ children }) => {
     reader.readAsDataURL(file);
   };
 
+  // Функция для восстановления начальных данных (сброс)
+  const resetData = () => {
+    localStorage.removeItem('blogData');
+    setBlogData(initialData);
+    alert('Данные сброшены до начальных значений');
+  };
+
   // Все функции и данные, которые будут доступны через контекст
   const value = {
     data: blogData,
+    hasChanges,
+    saveData,
+    resetData,
     updateProfile,
     updateProject,
     addProject,
